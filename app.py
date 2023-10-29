@@ -1,9 +1,10 @@
 from models import *
 from dotenv import load_dotenv
 from flask_cors import CORS
-from flask import Flask,  render_template, request, jsonify
+from flask import Flask,  render_template, request, jsonify,flash
 from sqlalchemy import or_
 import jwt,datetime,os
+from flask_security import roles_required
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -32,7 +33,6 @@ CORS(app)
 
 
 db.init_app(app)
-
 
 
 #deals with the login routes
@@ -133,6 +133,7 @@ def logout():
 
 # Get users route
 @app.route('/users', methods=['GET'])
+@login_required
 def get_all_users():
     users = User.query.all()
     user_list = []
@@ -150,7 +151,56 @@ def get_all_users():
     return jsonify(user_list)
 
 
+#Route for getting the clubs
+@app.route("/clubs")
+@login_required
+def get_all_clubs():
+    clubsList = Clubs.query.all()
+    clubsData = []
+    for club in clubsList:
+        data = {
+            'clubName': club.nameOfClub,
+            'description': club.description,
+            'imageLink': club.imageURL,
+            'location': club.location,
+            'dateFounded': club.dateFounded
+        }
+        clubsData.append(data)
+    
+    return jsonify (clubsData)
+
+# Route for creating a new club
+@app.route("/createClub", methods=["POST"])
+@login_required
+def create_new_club():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'Invalid JSON data'}), 400
+
+    nameOfClub = data.get('nameOfClub')
+    description = data.get('description')
+    imageURL = data.get('imageURL')
+    location = data.get('location')
+    dateFounded = data.get('dateFounded')
+
+    # Check if any required field is missing
+    if not nameOfClub or not description or not imageURL or not location or not dateFounded:
+        return jsonify({"message": "All fields are required"}), 400
+
+    try:
+        newClub = Clubs(nameOfClub=nameOfClub, description=description, imageURL=imageURL, location=location, dateFounded=dateFounded)
+        db.session.add(newClub)
+        db.session.commit()
+        return jsonify({"success": "New club created successfully!"})
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)
+    app.run(debug=True, port=5000)
+
+#For admin the route is /admin/
+#So if someone logs in as an admin we show them the button for admin if not we don't show them the admin button
