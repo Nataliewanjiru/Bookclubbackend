@@ -4,7 +4,6 @@ from flask_cors import CORS
 from flask import Flask,  render_template, request, jsonify,flash
 from sqlalchemy import or_
 import jwt,datetime,os
-from flask_security import roles_required
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
