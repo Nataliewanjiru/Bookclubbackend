@@ -153,7 +153,7 @@ def get_all_users():
 
 #Route for getting the all clubs
 @app.route("/clubs")
-@login_required
+#@login_required
 def get_all_clubs():
     clubsList = Clubs.query.all()
     clubsData = []
@@ -367,7 +367,7 @@ def book_summary(id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5004)
+    app.run(debug=True, port=5006)
 
 #For admin the route is /admin/
 #So if someone logs in as an admin we show them the button for admin if not we don't show them the admin button
