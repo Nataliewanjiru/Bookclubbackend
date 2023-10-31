@@ -132,26 +132,24 @@ def logout():
 
 
 # Get users route
-@app.route('/users', methods=['GET'])
+@app.route('/user', methods=['GET'])
 @login_required
 def get_all_users():
-    users = User.query.all()
-    user_list = []
+    user = User.query.filter_by(id=current_user.id).first()
+    user_data = {
+        'id': user.id,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'username': user.username,
+        'email': user.email,
+    }
+   
 
-    for user in users:
-        user_data = {
-            'id': user.id,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'username': user.username,
-            'email': user.email
-        }
-        user_list.append(user_data)
-
-    return jsonify(user_list)
+    return jsonify(user_data)
 
 
-#Route for getting the clubs
+
+#Route for getting the all clubs
 @app.route("/clubs")
 @login_required
 def get_all_clubs():
@@ -171,7 +169,49 @@ def get_all_clubs():
     return jsonify (clubsData)
 
 
-#Route for getting each club
+#Route for getting ratings for a club
+@app.route('/club/<int:id>/rating')
+#@login_required
+def get_ratings_for_a_club(id):
+     club = Clubs.query.filter_by(clubID=id).first()
+     if not club:
+      return jsonify({"message":"Club not found"})
+     data = {
+         'clubID': club.clubID,
+         'clubName': club.nameOfClub,
+         'description': club.description,
+         'imageLink': club.imageURL,
+         'location': club.location,
+         'dateFounded': club.dateFounded,
+         'ratingsData':[rating.get_club_rating() for rating in club.rating]
+         }
+     return jsonify(data)
+   
+
+#Route for creating a rating
+@app.route('/rating', methods=['POST'])
+@login_required
+def create_rating():
+    # Get the data from the request
+    data = request.get_json()
+    
+    if not data:
+      return jsonify({'error': 'Invalid JSON data'}), 400
+    
+    comment = data.get('comment')
+    rating = data.get('rating')
+    clubId = data.get('clubID')
+
+
+    newRating = Rating(comment=comment, rating=rating, memberID=current_user.id, clubID=clubId)
+    db.session.add(newRating)
+    db.session.commit()
+
+    return jsonify({'message':'New rating created successfully!'})
+
+
+
+#Route for getting each club and books in the club
 @app.route("/clubs/<int:id>")
 @login_required
 def get_single_club(id):
@@ -224,6 +264,7 @@ def create_new_club():
 
 
 
+#Route for getting all books
 @app.route("/getbooks")
 @login_required
 def get_all_books():
@@ -278,15 +319,15 @@ def create_summary():
     # Extract data from the JSON request
     summary_text = data.get('summary')
     book_id = data.get('bookID')
-    user_id = data.get('userID')
+
 
     # Check if required data is present
-    if not summary_text or not book_id or not user_id:
+    if not summary_text or not book_id :
         return jsonify({"message": "Summary, bookID, and userID are required"}), 400
 
     try:
         # Create a new summary
-        new_summary = Summaries(summary=summary_text, bookID=book_id, userID=user_id)
+        new_summary = Summaries(summary=summary_text, bookID=book_id, userID=current_user.id)
 
         # Add the summary to the database
         db.session.add(new_summary)
@@ -299,33 +340,32 @@ def create_summary():
         print(e)
         return jsonify({"error": str(e)}), 500
 
-    
-        
-
+   
+       
 #Route for book summary
-#@app.route("/book/<int:id>")
-#@login_required
-#def book_summary(id):
-#    book = Books.query.filter_by(bookID=id).first()
-#    if not book:
-#     return jsonify({"message":"Book not found"})
-#    
-#    booksData=[]
-#    data = {
-#      'bookID': book.bookID,
-#      'bookTitle': book.title,
-#      'bookauthor': book.author,
-#      'bookImageURL': book.imageURL,
-#      'clubID': book.clubID,
-#      'reviews':[book.booksummaries() for book in book.summaries]
-#      }
-#    booksData.append(data)
-#    return jsonify (booksData)
+@app.route("/book/<int:id>")
+@login_required
+def book_summary(id):
+    book = Books.query.filter_by(bookID=id).first()
+    if not book:
+     return jsonify({"message":"Book not found"})
+    
+    booksData=[]
+    data = {
+      'bookID': book.bookID,
+      'bookTitle': book.title,
+      'bookauthor': book.author,
+      'bookImageURL': book.imageURL,
+      'clubID': book.clubID,
+      'reviews':[book.booksummaries() for book in book.summaries]
+      }
+    booksData.append(data)
+    return jsonify (booksData)
 
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5004)
 
 #For admin the route is /admin/
 #So if someone logs in as an admin we show them the button for admin if not we don't show them the admin button

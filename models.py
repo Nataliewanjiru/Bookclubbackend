@@ -31,6 +31,28 @@ class Rating (db.Model,UserMixin):
     rating = db.Column(db.Float,nullable=False)
     comment = db.Column(db.Text,nullable=False)
 
+    def get_club_rating(self):
+        ratings = Rating.query.filter_by(clubID = Clubs.clubID).all()
+        clubRating=[]
+        for rating in ratings:
+            data= {
+                'ratingID': rating.ratingID,
+                'memberID': rating.memberID,
+                'rating' : rating.rating,
+                'comment':rating.comment,
+                'clubID':rating.clubID
+            }
+            
+            clubRating.append(data)
+        return clubRating
+    
+    #Route for adding
+    @staticmethod
+    def insert_new_review(userID,clubID,rating,comment):
+        newReview = Rating(memberID= userID , clubID= clubID , rating= rating , comment= comment )
+        db.session.add(newReview)
+        db.session.commit()
+
 admin.add_view(ModelView(Rating,db.session))
 
 
@@ -39,6 +61,17 @@ class Followers(db.Model,UserMixin):
     __tablename__ = "followers"
     user_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
     follower_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
+
+    def followers(self):
+        followers = Followers.query.filter_by(user_id=self.id).all()
+        followerData= []
+        for follower in followers:
+            data={
+                'user_id': follower.follower_id,
+            }
+            followerData.append(data)
+        return followerData
+    
 
 admin.add_view(ModelView(Followers,db.session))
 
@@ -54,7 +87,7 @@ class Summaries(db.Model, UserMixin):
     
 
     def booksummaries(self):
-        summaries=Summaries.query.filter_by(Summaries.bookID == Books.bookID).all()
+        summaries=Summaries.query.filter_by(bookID = Books.bookID).all()
         booksummaries = []
         for summary in summaries:
             data = {
@@ -118,7 +151,9 @@ class Clubs(db.Model,UserMixin):
 
     members = db.relationship(Clubusers, backref='clubs')
     books = db.relationship(Books, backref='clubs')
-   
+    rating = db.relationship(Rating, backref='clubs')
+
+
 
 
 admin.add_view(ModelView(Clubs,db.session))
