@@ -51,7 +51,21 @@ class Summaries(db.Model, UserMixin):
     summary = db.Column(db.String, nullable=False)
     bookID = db.Column(db.Integer, db.ForeignKey('books.bookID'), nullable=False)
     userID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
 
+    def booksummaries(self):
+        summaries=Summaries.query.filter_by(Summaries.bookID == Books.bookID).all()
+        booksummaries = []
+        for summary in summaries:
+            data = {
+                'summaryID': summary.summaryID,
+                'summary': summary.summary,
+                'bookID': summary.bookID,
+                'userID': summary.userID
+            }
+            booksummaries.append(data)
+        return booksummaries
+        
 
 
 admin.add_view(ModelView(Summaries,db.session))
@@ -69,6 +83,22 @@ class Books(db.Model, UserMixin):
 
     # Define the 'summaries' relationship
     summaries = db.relationship("Summaries", backref='books')
+    
+    def getbooks(self):
+      # Assuming that each club object has an attribute 'clubID'
+      books = Books.query.filter_by(clubID=self.clubID).all()
+      books_data = []
+      for book in books:
+          data = {
+              'bookID': book.bookID,
+              'bookTitle': book.title,
+              'bookAuthor': book.author,
+              'bookImageURL': book.imageURL,
+              'clubID': book.clubID,
+          }
+          books_data.append(data)
+      return books_data
+
 
 
 admin.add_view(ModelView(Books,db.session))
@@ -89,7 +119,6 @@ class Clubs(db.Model,UserMixin):
     members = db.relationship(Clubusers, backref='clubs')
     books = db.relationship(Books, backref='clubs')
    
-
 
 
 admin.add_view(ModelView(Clubs,db.session))

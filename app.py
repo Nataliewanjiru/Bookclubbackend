@@ -159,6 +159,7 @@ def get_all_clubs():
     clubsData = []
     for club in clubsList:
         data = {
+            'clubID': club.clubID,
             'clubName': club.nameOfClub,
             'description': club.description,
             'imageLink': club.imageURL,
@@ -169,6 +170,28 @@ def get_all_clubs():
     
     return jsonify (clubsData)
 
+
+#Route for getting each club
+@app.route("/clubs/<int:id>")
+@login_required
+def get_single_club(id):
+    club = Clubs.query.filter_by(clubID=id).first()
+    if not club:
+        return jsonify({"message":"Club not found"})
+    data = {
+        'clubID': club.clubID,
+        'clubName': club.nameOfClub,
+        'description': club.description,
+        'imageLink': club.imageURL,
+        'location': club.location,
+        'dateFounded': club.dateFounded,
+        'booksData':[book.getbooks() for book in club.books]
+        }
+    return jsonify(data)
+
+
+
+
 # Route for creating a new club
 @app.route("/createClub", methods=["POST"])
 @login_required
@@ -177,6 +200,8 @@ def create_new_club():
 
     if not data:
         return jsonify({'error': 'Invalid JSON data'}), 400
+
+
 
     nameOfClub = data.get('nameOfClub')
     description = data.get('description')
@@ -199,8 +224,108 @@ def create_new_club():
 
 
 
+@app.route("/getbooks")
+@login_required
+def get_all_books():
+    booksList = Books.query.all()
+    booksData = []
+    for book in booksList:
+        data = {
+            'bookID': book.bookID,
+            'bookTitle': book.title,
+            'bookauthor': book.author,
+            'bookImageURL': book.imageURL,
+            'clubID': book.clubID,
+        }
+        booksData.append(data)
+        return jsonify (booksData)
+   
+   
+
+# Route for creating a new book
+@app.route("/createbook", methods=["POST"])
+@login_required
+def add_a_book():
+    data = request.get_json()
+    if not data:
+      return jsonify({'error': 'Invalid JSON data'}), 400
+    
+    
+    title = data.get("title")
+    author = data.get("author")
+    imageURL = data.get("imageURL")
+    clubID = data.get("clubID")
+
+    # Check if any required field is missing
+    if not title or not author or not imageURL or not clubID:
+       return jsonify({"message": "All fields are required"}), 400
+    
+    newBook = Books(title=title,author=author,imageURL=imageURL,clubID=clubID)
+    db.session.add(newBook)
+    db.session.commit()
+
+    return jsonify({"success": "New book created successfully!"})
+
+
+#Rotes for writing asummary
+@app.route("/summaries", methods=["POST"])
+@login_required 
+def create_summary():
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Invalid JSON data'}), 400
+
+    # Extract data from the JSON request
+    summary_text = data.get('summary')
+    book_id = data.get('bookID')
+    user_id = data.get('userID')
+
+    # Check if required data is present
+    if not summary_text or not book_id or not user_id:
+        return jsonify({"message": "Summary, bookID, and userID are required"}), 400
+
+    try:
+        # Create a new summary
+        new_summary = Summaries(summary=summary_text, bookID=book_id, userID=user_id)
+
+        # Add the summary to the database
+        db.session.add(new_summary)
+        db.session.commit()
+
+        # Return a success message
+        return jsonify({"message": "Summary created successfully"}), 201
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+
+    
+        
+
+#Route for book summary
+#@app.route("/book/<int:id>")
+#@login_required
+#def book_summary(id):
+#    book = Books.query.filter_by(bookID=id).first()
+#    if not book:
+#     return jsonify({"message":"Book not found"})
+#    
+#    booksData=[]
+#    data = {
+#      'bookID': book.bookID,
+#      'bookTitle': book.title,
+#      'bookauthor': book.author,
+#      'bookImageURL': book.imageURL,
+#      'clubID': book.clubID,
+#      'reviews':[book.booksummaries() for book in book.summaries]
+#      }
+#    booksData.append(data)
+#    return jsonify (booksData)
+
+
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)
 
 #For admin the route is /admin/
 #So if someone logs in as an admin we show them the button for admin if not we don't show them the admin button
