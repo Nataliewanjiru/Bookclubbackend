@@ -3,7 +3,7 @@ blinker==1.6.2
 click==8.1.7
 flask==2.2.5
 Flask-Migrate==4.0.5
-flask-sqlalchemy==3.0.5
+flask-sqlalchemy==1.4.27
 greenlet==3.0.0
 gunicorn==21.2.0
 importlib-metadata==6.5.0
