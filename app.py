@@ -173,7 +173,7 @@ def get_all_clubs():
 
 #Route for getting ratings for a club
 @app.route('/club/<int:id>/rating')
-#@login_required
+@login_required
 def get_ratings_for_a_club(id):
      club = Clubs.query.filter_by(clubID=id).first()
      if not club:
