@@ -153,7 +153,7 @@ def get_all_users():
 
 #Route for getting the all clubs
 @app.route("/clubs")
-#@login_required
+@login_required
 def get_all_clubs():
     clubsList = Clubs.query.all()
     clubsData = []
@@ -215,7 +215,6 @@ def create_rating():
 
 #Route for getting each club and books in the club
 @app.route("/clubs/<int:id>")
-@login_required
 def get_single_club(id):
     club = Clubs.query.filter_by(clubID=id).first()
     if not club:
