@@ -115,7 +115,7 @@ def login():
 
 
 # Route for profile
-@app.route('/userprofile')
+@app.route('/userprofile', methods=['GET'])
 @login_required
 def profile():
     fullname = current_user.first_name + current_user.last_name
@@ -126,7 +126,7 @@ def profile():
     })
 
 # Route for logout
-@app.route('/userlogout')
+@app.route('/userlogout', methods=['GET'])
 @login_required
 def logout():
     logout_user()
@@ -152,7 +152,7 @@ def get_all_users():
 
 
 #Route for getting the all clubs
-@app.route("/clubs")
+@app.route("/clubs", methods=['GET'])
 @login_required
 def get_all_clubs():
     clubsList = Clubs.query.all()
@@ -172,7 +172,7 @@ def get_all_clubs():
 
 
 #Route for getting ratings for a club
-@app.route('/club/<int:id>/rating')
+@app.route('/club/<int:id>/rating', methods=['GET'])
 @login_required
 def get_ratings_for_a_club(id):
      club = Clubs.query.filter_by(clubID=id).first()
@@ -267,7 +267,6 @@ def create_new_club():
 
 #Route for getting all books
 @app.route("/getbooks")
-@login_required
 def get_all_books():
     booksList = Books.query.all()
     booksData = []
@@ -344,7 +343,7 @@ def create_summary():
    
        
 #Route for book summary
-@app.route("/book/<int:id>")
+@app.route("/book/<int:id>", methods=['GET'])
 @login_required
 def book_summary(id):
     book = Books.query.filter_by(bookID=id).first()
