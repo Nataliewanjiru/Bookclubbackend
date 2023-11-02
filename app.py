@@ -116,7 +116,6 @@ def login():
 
 # Route for profile
 @app.route('/userprofile', methods=['GET'])
-@login_required
 def profile():
     fullname = current_user.first_name + current_user.last_name
     return jsonify({
@@ -127,7 +126,6 @@ def profile():
 
 # Route for logout
 @app.route('/userlogout', methods=['GET'])
-@login_required
 def logout():
     logout_user()
     return 'Logged out successfully'
@@ -153,7 +151,6 @@ def get_all_users():
 
 #Route for getting the all clubs
 @app.route("/clubs", methods=['GET'])
-@login_required
 def get_all_clubs():
     clubsList = Clubs.query.all()
     clubsData = []
@@ -173,7 +170,6 @@ def get_all_clubs():
 
 #Route for getting ratings for a club
 @app.route('/club/<int:id>/rating', methods=['GET'])
-@login_required
 def get_ratings_for_a_club(id):
      club = Clubs.query.filter_by(clubID=id).first()
      if not club:
