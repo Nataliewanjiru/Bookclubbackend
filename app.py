@@ -4,6 +4,7 @@ from flask_cors import CORS
 from flask import Flask,  render_template, request, jsonify,flash
 from sqlalchemy import or_
 import jwt,datetime,os
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -33,6 +34,9 @@ admin.init_app(app)
 #escape the cors error
 CORS(app)
 
+app.config['JWT_SECRET_KEY'] = 'your-secret-key'  # Change this to a secure key
+# Initialize the JWTManager
+jwt = JWTManager(app)
 
 db.init_app(app)
 
@@ -105,10 +109,8 @@ def login():
 
     if user and check_password_hash(user.password, password):
         login_user(user)
-        expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
-        token = jwt.encode({'username': username, 'exp': expiration}, app.config['SECRET_KEY'], algorithm='HS256')
-        token_str = token.decode("utf-8")
-        return jsonify({'token': token_str})
+        access_token = create_access_token(identity=user.id, expires_delta=datetime.timedelta(hours=24))
+        return jsonify({'access_token': access_token}), 200
     else:
         return jsonify({'message': 'Invalid username,email or password'}), 401
 
@@ -116,6 +118,7 @@ def login():
 
 # Route for profile
 @app.route('/userprofile', methods=['GET'])
+@jwt_required()
 def profile():
     fullname = current_user.first_name + current_user.last_name
     return jsonify({
@@ -126,6 +129,7 @@ def profile():
 
 # Route for logout
 @app.route('/userlogout', methods=['GET'])
+@jwt_required()
 def logout():
     logout_user()
     return 'Logged out successfully'
@@ -133,6 +137,7 @@ def logout():
 
 # Get users route
 @app.route('/user', methods=['GET'])
+@jwt_required()
 @login_required
 def get_all_users():
     user = User.query.filter_by(id=current_user.id).first()
@@ -151,6 +156,7 @@ def get_all_users():
 
 #Route for getting the all clubs
 @app.route("/clubs", methods=['GET'])
+@jwt_required()
 def get_all_clubs():
     clubsList = Clubs.query.all()
     clubsData = []
@@ -170,6 +176,7 @@ def get_all_clubs():
 
 #Route for getting ratings for a club
 @app.route('/club/<int:id>/rating', methods=['GET'])
+@jwt_required()
 def get_ratings_for_a_club(id):
      club = Clubs.query.filter_by(clubID=id).first()
      if not club:
@@ -189,6 +196,7 @@ def get_ratings_for_a_club(id):
 #Route for creating a rating
 @app.route('/rating', methods=['POST'])
 @login_required
+@jwt_required()
 def create_rating():
     # Get the data from the request
     data = request.get_json()
@@ -211,6 +219,7 @@ def create_rating():
 
 #Route for getting each club and books in the club
 @app.route("/clubs/<int:id>")
+@jwt_required()
 def get_single_club(id):
     club = Clubs.query.filter_by(clubID=id).first()
     if not club:
@@ -231,6 +240,7 @@ def get_single_club(id):
 
 # Route for creating a new club
 @app.route("/createClub", methods=["POST"])
+@jwt_required()
 @login_required
 def create_new_club():
     data = request.get_json()
@@ -263,6 +273,7 @@ def create_new_club():
 
 #Route for getting all books
 @app.route("/getbooks")
+@jwt_required()
 def get_all_books():
     booksList = Books.query.all()
     booksData = []
@@ -340,7 +351,7 @@ def create_summary():
        
 #Route for book summary
 @app.route("/book/<int:id>", methods=['GET'])
-@login_required
+@jwt_required()
 def book_summary(id):
     book = Books.query.filter_by(bookID=id).first()
     if not book:
