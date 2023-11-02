@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 from flask import Flask,  render_template, request, jsonify,flash
 from sqlalchemy import or_
-import jwt,datetime,os
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+import datetime,os
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
