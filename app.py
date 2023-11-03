@@ -317,7 +317,7 @@ def add_a_book():
 
 #Rotes for writing asummary
 @app.route("/summaries", methods=["POST"])
-@login_required 
+@jwt_required
 def create_summary():
     data = request.get_json()
     if not data:
