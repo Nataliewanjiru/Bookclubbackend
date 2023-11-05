@@ -110,7 +110,8 @@ def login():
     if user and check_password_hash(user.password, password):
         login_user(user)
         access_token = create_access_token(identity=user.id, expires_delta=datetime.timedelta(hours=24))
-        return jsonify({'access_token': access_token}), 200
+        return jsonify({'access_token': access_token,
+                        "userid":current_user.id}), 200
     else:
         return jsonify({'message': 'Invalid username,email or password'}), 401
 
@@ -138,7 +139,6 @@ def logout():
 # Get users route
 @app.route('/user', methods=['GET'])
 @jwt_required()
-@login_required
 def get_all_users():
     user = User.query.filter_by(id=current_user.id).first()
     user_data = {
@@ -326,6 +326,7 @@ def create_summary():
     # Extract data from the JSON request
     summary_text = data.get('summary')
     book_id = data.get('bookID')
+    user_id = data.get("userID")
 
 
     # Check if required data is present
@@ -334,7 +335,7 @@ def create_summary():
 
     try:
         # Create a new summary
-        new_summary = Summaries(summary=summary_text, bookID=book_id, userID=current_user.id)
+        new_summary = Summaries(summary=summary_text, bookID=book_id, userID=user_id)
 
         # Add the summary to the database
         db.session.add(new_summary)
