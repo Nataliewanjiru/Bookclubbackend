@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.declarative import declarative_base
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_login import UserMixin
@@ -8,10 +9,12 @@ db = SQLAlchemy()
 #Initiates the admin side
 admin = Admin()
 
+Base = declarative_base()
+metadata = Base.metadata
 
 
 
-class Clubusers(db.Model,UserMixin):
+class Clubusers(db.Model,UserMixin,Base):
     __tablename__="clubusers"
     memberID = db.Column(db.Integer,db.ForeignKey("users.id"),primary_key=True)
     clubID = db.Column(db.Integer,db.ForeignKey("clubs.clubID"),primary_key=True)
@@ -22,7 +25,7 @@ admin.add_view(ModelView(Clubusers,db.session))
 
 
 
-class Rating (db.Model,UserMixin):
+class Rating (db.Model,UserMixin,Base):
     __tablename__ = "reviews"
 
     ratingID = db.Column(db.Integer,primary_key=True)
@@ -57,7 +60,7 @@ admin.add_view(ModelView(Rating,db.session))
 
 
 
-class Followers(db.Model,UserMixin):
+class Followers(db.Model,UserMixin,Base):
     __tablename__ = "followers"
     user_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
     follower_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
@@ -77,7 +80,7 @@ admin.add_view(ModelView(Followers,db.session))
 
 
 
-class Summaries(db.Model, UserMixin):
+class Summaries(db.Model, UserMixin,Base):
     __tablename__ = 'summaries'
 
     summaryID = db.Column(db.Integer, primary_key=True)
@@ -105,7 +108,7 @@ admin.add_view(ModelView(Summaries,db.session))
 
 
 
-class Books(db.Model, UserMixin):
+class Books(db.Model, UserMixin,Base):
     __tablename__ = "books"
 
     bookID = db.Column(db.Integer, primary_key=True)
@@ -141,7 +144,7 @@ admin.add_view(ModelView(Books,db.session))
 
 
 
-class Clubs(db.Model,UserMixin):
+class Clubs(db.Model,UserMixin,Base):
     __tablename__ = "clubs"
 
     clubID = db.Column(db.Integer,primary_key=True)
@@ -162,7 +165,7 @@ admin.add_view(ModelView(Clubs,db.session))
 
 
 
-class User(db.Model,UserMixin):
+class User(db.Model,UserMixin,Base):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
