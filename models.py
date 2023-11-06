@@ -111,6 +111,8 @@ class Books(db.Model, UserMixin):
     bookID = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     author = db.Column(db.String, nullable=False)
+    synopsis= db.Column(db.String,nullable= False)
+    chapters =db.Column(db.Integer,nullable=False)
     imageURL = db.Column(db.String, nullable=False)
     clubID = db.Column(db.Integer, db.ForeignKey('clubs.clubID'))
 

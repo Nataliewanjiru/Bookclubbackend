@@ -241,7 +241,6 @@ def get_single_club(id):
 # Route for creating a new club
 @app.route("/createClub", methods=["POST"])
 @jwt_required()
-@login_required
 def create_new_club():
     data = request.get_json()
 
