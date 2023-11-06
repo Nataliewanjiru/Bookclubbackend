@@ -132,6 +132,8 @@ class Books(db.Model, UserMixin,Base):
               'bookTitle': book.title,
               'bookAuthor': book.author,
               'bookImageURL': book.imageURL,
+              "bookSynopsis":book.synopsis,
+              "bookchapters":book.chapters,
               'clubID': book.clubID,
           }
           books_data.append(data)
