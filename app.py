@@ -301,10 +301,12 @@ def add_a_book():
     title = data.get("title")
     author = data.get("author")
     imageURL = data.get("imageURL")
+    book_summary =data.get("synopsis")
+    bookChapters = data.get("chapters")
     clubID = data.get("clubID")
 
     # Check if any required field is missing
-    if not title or not author or not imageURL or not clubID:
+    if not title or not author or not imageURL or not clubID or not book_summary or not bookChapters:
        return jsonify({"message": "All fields are required"}), 400
     
     newBook = Books(title=title,author=author,imageURL=imageURL,clubID=clubID)
