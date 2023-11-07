@@ -35,7 +35,7 @@ class Rating (db.Model,UserMixin,Base):
     comment = db.Column(db.Text,nullable=False)
 
     def get_club_rating(self):
-        ratings = Rating.query.filter_by(clubID = Clubs.clubID).all()
+        ratings = Rating.query.filter_by(clubID = self.clubID).all()
         clubRating=[]
         for rating in ratings:
             data= {
@@ -90,7 +90,7 @@ class Summaries(db.Model, UserMixin,Base):
     
 
     def booksummaries(self):
-        summaries=Summaries.query.filter_by(bookID = Books.bookID).all()
+        summaries=Summaries.query.filter_by(bookID = self.bookID).all()
         booksummaries = []
         for summary in summaries:
             data = {

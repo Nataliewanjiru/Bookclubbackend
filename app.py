@@ -282,6 +282,8 @@ def get_all_books():
             'bookTitle': book.title,
             'bookauthor': book.author,
             'bookImageURL': book.imageURL,
+            "bookSynopsis":book.synopsis,
+            'bookChapters':book.chapters,
             'clubID': book.clubID,
         }
         booksData.append(data)
@@ -364,6 +366,8 @@ def book_summary(id):
       'bookTitle': book.title,
       'bookauthor': book.author,
       'bookImageURL': book.imageURL,
+      'bookChapters':book.chapters,
+      'bookSynopsis':book.synopsis,
       'clubID': book.clubID,
       'reviews':[book.booksummaries() for book in book.summaries]
       }
@@ -373,7 +377,7 @@ def book_summary(id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)
 
 #For admin the route is /admin/
 #So if someone logs in as an admin we show them the button for admin if not we don't show them the admin button
