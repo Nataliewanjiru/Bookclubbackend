@@ -291,7 +291,7 @@ def get_all_books():
 
 # Route for creating a new book
 @app.route("/createbook", methods=["POST"])
-@login_required
+@jwt_required()
 def add_a_book():
     data = request.get_json()
     if not data:
@@ -309,7 +309,7 @@ def add_a_book():
     if not title or not author or not imageURL or not clubID or not book_summary or not bookChapters:
        return jsonify({"message": "All fields are required"}), 400
     
-    newBook = Books(title=title,author=author,imageURL=imageURL,clubID=clubID)
+    newBook = Books(title=title,author=author,imageURL=imageURL,synopsis=book_summary,chapters=bookChapters,clubID=clubID)
     db.session.add(newBook)
     db.session.commit()
 
@@ -373,7 +373,7 @@ def book_summary(id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5006)
+    app.run(debug=True, port=5000)
 
 #For admin the route is /admin/
 #So if someone logs in as an admin we show them the button for admin if not we don't show them the admin button
