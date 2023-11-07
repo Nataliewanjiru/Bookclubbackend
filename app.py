@@ -195,7 +195,6 @@ def get_ratings_for_a_club(id):
 
 #Route for creating a rating
 @app.route('/rating', methods=['POST'])
-@login_required
 @jwt_required()
 def create_rating():
     # Get the data from the request
@@ -207,9 +206,10 @@ def create_rating():
     comment = data.get('comment')
     rating = data.get('rating')
     clubId = data.get('clubID')
+    userid = data.get('userID')
 
 
-    newRating = Rating(comment=comment, rating=rating, memberID=current_user.id, clubID=clubId)
+    newRating = Rating(comment=comment, rating=rating, memberID=userid, clubID=clubId)
     db.session.add(newRating)
     db.session.commit()
 
@@ -377,7 +377,7 @@ def book_summary(id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5002)
 
 #For admin the route is /admin/
 #So if someone logs in as an admin we show them the button for admin if not we don't show them the admin button
