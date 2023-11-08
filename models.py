@@ -158,7 +158,7 @@ class Clubs(db.Model,UserMixin,Base):
 
     members = db.relationship(Clubusers, backref='clubs')
     books = db.relationship(Books, backref='clubs')
-    rating = db.relationship(Rating, backref='clubs')
+    ratings = db.relationship(Rating, backref='clubs')
 
 
 

@@ -4,7 +4,7 @@ from flask_cors import CORS
 from flask import Flask,  render_template, request, jsonify,flash
 from sqlalchemy import or_
 import datetime,os
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required,get_jwt_identity
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -136,6 +136,7 @@ def logout():
     return 'Logged out successfully'
 
 
+
 # Get users route
 @app.route('/user', methods=['GET'])
 @jwt_required()
@@ -175,7 +176,7 @@ def get_all_clubs():
 
 
 #Route for getting ratings for a club
-@app.route('/club/<int:id>/rating', methods=['GET'])
+@app.route('/club/<int:id>/rating')
 @jwt_required()
 def get_ratings_for_a_club(id):
      club = Clubs.query.filter_by(clubID=id).first()
@@ -188,7 +189,7 @@ def get_ratings_for_a_club(id):
          'imageLink': club.imageURL,
          'location': club.location,
          'dateFounded': club.dateFounded,
-         'ratingsData':[rating.get_club_rating() for rating in club.rating]
+         'ratingsData':[rating.get_club_rating() for rating in club.ratings]
          }
      return jsonify(data)
    
@@ -289,7 +290,29 @@ def get_all_books():
         booksData.append(data)
         return jsonify (booksData)
    
-   
+@app.route('/joinclub', methods=['POST'])
+@jwt_required()
+def join_club():
+    # Get the authenticated user's ID from the JWT token
+    memberID = get_jwt_identity()
+    
+    # Extract the club ID from the request data
+    data = request.get_json()
+    clubID = data.get('clubID')
+
+    if not clubID:
+        return jsonify({"error": "clubID is required"}), 400
+
+    newMembership = Clubusers(memberID=memberID, clubID=clubID)
+
+    try:
+        db.session.add(newMembership)
+        db.session.commit()
+        return jsonify({"Success": "You have joined the club!"}), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify({"Error": str(e)}), 500
+    
 
 # Route for creating a new book
 @app.route("/createbook", methods=["POST"])
@@ -377,7 +400,7 @@ def book_summary(id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)
+    app.run(debug=True, port=5001)
 
 #For admin the route is /admin/
 #So if someone logs in as an admin we show them the button for admin if not we don't show them the admin button
