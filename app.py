@@ -121,12 +121,37 @@ def login():
 @app.route('/userprofile', methods=['GET'])
 @jwt_required()
 def profile():
-    fullname = current_user.first_name + current_user.last_name
+    user_id = get_jwt_identity()  
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    fullname = user.first_name + user.last_name
+
+    user_clubs = Clubusers.query.filter_by(memberID=user_id).all()
+
+    club_ids = [club.clubID for club in user_clubs]
+
+    clubs = Clubs.query.filter(Clubs.clubID.in_(club_ids)).all()
+
+    club_data = []
+    for club in clubs:
+        club_data.append({
+            "clubID": club.clubID,
+            "clubName": club.nameOfClub,
+            "description": club.description,
+            "imageLink": club.imageURL,
+        })
+
     return jsonify({
         "name": fullname,
-        "username": current_user.username,
-        "email": current_user.email
+        "username": user.username,
+        "email": user.email,
+        "clubs": club_data,
+        'follower':[follower.follower() for follower in user.followers],
+        "summaries":[summary.usersummaries() for summary in user.summaries]
     })
+
 
 # Route for logout
 @app.route('/userlogout', methods=['GET'])
@@ -134,24 +159,6 @@ def profile():
 def logout():
     logout_user()
     return 'Logged out successfully'
-
-
-
-# Get users route
-@app.route('/user', methods=['GET'])
-@jwt_required()
-def get_all_users():
-    user = User.query.filter_by(id=current_user.id).first()
-    user_data = {
-        'id': user.id,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'username': user.username,
-        'email': user.email,
-    }
-   
-
-    return jsonify(user_data)
 
 
 

@@ -18,7 +18,8 @@ class Clubusers(db.Model,UserMixin,Base):
     __tablename__="clubusers"
     memberID = db.Column(db.Integer,db.ForeignKey("users.id"),primary_key=True)
     clubID = db.Column(db.Integer,db.ForeignKey("clubs.clubID"),primary_key=True)
-
+    
+    
 admin.add_view(ModelView(Clubusers,db.session))
 
 
@@ -64,16 +65,17 @@ class Followers(db.Model,UserMixin,Base):
     __tablename__ = "followers"
     user_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
     follower_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
-
+      
     def followers(self):
-        followers = Followers.query.filter_by(user_id=self.id).all()
-        followerData= []
-        for follower in followers:
-            data={
-                'user_id': follower.follower_id,
-            }
-            followerData.append(data)
-        return followerData
+     followers = Followers.query.filter_by(user_id=self.user_id).all()
+     followerData = []
+     for follower in followers:
+         data = {
+             'user_id': follower.follower_id,
+         }
+         followerData.append(data)
+     return followerData
+
     
 
 admin.add_view(ModelView(Followers,db.session))
@@ -101,7 +103,20 @@ class Summaries(db.Model, UserMixin,Base):
             }
             booksummaries.append(data)
         return booksummaries
-        
+    
+    def usersummaries(self):
+        summaries=Summaries.query.filter_by(userID = self.userID).all()
+        booksummaries = []
+        for summary in summaries:
+            data = {
+                'summaryID': summary.summaryID,
+                'summary': summary.summary,
+                'bookID': summary.bookID,
+                'userID': summary.userID
+            }
+            booksummaries.append(data)
+        return booksummaries
+    
 
 
 admin.add_view(ModelView(Summaries,db.session))
@@ -159,7 +174,6 @@ class Clubs(db.Model,UserMixin,Base):
     members = db.relationship(Clubusers, backref='clubs')
     books = db.relationship(Books, backref='clubs')
     ratings = db.relationship(Rating, backref='clubs')
-
 
 
 
