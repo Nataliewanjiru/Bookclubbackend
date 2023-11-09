@@ -68,17 +68,24 @@ class Followers(db.Model,UserMixin,Base):
     user_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
     follower_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
       
-    def followers(self):
-     followers = Followers.query.filter_by(user_id=self.user_id).all()
-     followerData = []
-     for follower in followers:
-         data = {
-             'user_id': follower.follower_id,
-         }
-         followerData.append(data)
-     return followerData
 
-    
+    def followers(self):
+        followers = (
+            db.session.query(Followers, User.name)
+            .join(User, Followers.follower_id == User.id)
+            .filter(Followers.user_id == self.user_id)
+            .all()
+        )
+
+        followerData = []
+        for follower, name in followers:
+            data = {
+                'user_id': follower.follower_id,
+                'name': name,
+            }
+            followerData.append(data)
+
+        return followerData
 
 admin.add_view(ModelView(Followers,db.session))
 

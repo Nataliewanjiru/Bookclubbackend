@@ -142,13 +142,14 @@ def profile():
             "description": club.description,
             "imageLink": club.imageURL,
         })
+    followers_data = [{'user_id': follower.id, 'name': follower.username} for follower in user.followers]
 
     return jsonify({
         "name": fullname,
         "username": user.username,
         "email": user.email,
         "clubs": club_data,
-        'follower':[follower.follower() for follower in user.followers],
+        'follower':followers_data,
         "summaries":[summary.usersummaries() for summary in user.summaries]
     })
 
@@ -176,13 +177,15 @@ def userprofile(id):
             "description": club.description,
             "imageLink": club.imageURL,
         })
+    
+    followers_data = [{'user_id': follower.id, 'name': follower.username} for follower in user.followers]
 
     return jsonify({
         "name": fullname,
         "username": user.username,
         "email": user.email,
         "clubs": club_data,
-        'follower':[follower.follower() for follower in user.followers],
+        'follower':followers_data,
         "summaries":[summary.usersummaries() for summary in user.summaries]
     })
 
