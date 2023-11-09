@@ -39,9 +39,11 @@ class Rating (db.Model,UserMixin,Base):
         ratings = Rating.query.filter_by(clubID = self.clubID).all()
         clubRating=[]
         for rating in ratings:
+            user = User.query.get(rating.memberID)
             data= {
                 'ratingID': rating.ratingID,
-                'memberID': rating.memberID,
+                'member': user.username,
+                "memberID":user.memberID,
                 'rating' : rating.rating,
                 'comment':rating.comment,
                 'clubID':rating.clubID
@@ -95,11 +97,13 @@ class Summaries(db.Model, UserMixin,Base):
         summaries=Summaries.query.filter_by(bookID = self.bookID).all()
         booksummaries = []
         for summary in summaries:
+            user = User.query.get(summary.userID)
             data = {
                 'summaryID': summary.summaryID,
                 'summary': summary.summary,
                 'bookID': summary.bookID,
-                'userID': summary.userID
+                "userID":summary.userID,
+                'user': user.username
             }
             booksummaries.append(data)
         return booksummaries
@@ -108,9 +112,11 @@ class Summaries(db.Model, UserMixin,Base):
         summaries=Summaries.query.filter_by(userID = self.userID).all()
         booksummaries = []
         for summary in summaries:
+            book = Books.query.get(summary.bookID)
             data = {
                 'summaryID': summary.summaryID,
                 'summary': summary.summary,
+                "book":book.title,
                 'bookID': summary.bookID,
                 'userID': summary.userID
             }

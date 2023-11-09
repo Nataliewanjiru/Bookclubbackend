@@ -153,6 +153,69 @@ def profile():
     })
 
 
+# Route for other profile
+@app.route('/profile/<int:id>', methods=['GET'])
+def userprofile(id): 
+    user = User.query.get(id)
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    fullname = user.first_name + user.last_name
+
+    user_clubs = Clubusers.query.filter_by(memberID=id).all()
+
+    club_ids = [club.clubID for club in user_clubs]
+
+    clubs = Clubs.query.filter(Clubs.clubID.in_(club_ids)).all()
+
+    club_data = []
+    for club in clubs:
+        club_data.append({
+            "clubID": club.clubID,
+            "clubName": club.nameOfClub,
+            "description": club.description,
+            "imageLink": club.imageURL,
+        })
+
+    return jsonify({
+        "name": fullname,
+        "username": user.username,
+        "email": user.email,
+        "clubs": club_data,
+        'follower':[follower.follower() for follower in user.followers],
+        "summaries":[summary.usersummaries() for summary in user.summaries]
+    })
+
+#Route for following users
+@app.route('/follow', methods=['POST'])
+@jwt_required()
+def follow_user():
+    current_user_id = get_jwt_identity() 
+    data = request.get_json()
+    user_id_to_follow = data.get('user_id')
+
+    if not user_id_to_follow:
+        return jsonify({"message": "user_id is required"}), 400
+
+    user_to_follow = User.query.get(user_id_to_follow)
+
+    if not user_to_follow:
+        return jsonify({"message": "User to follow not found"}), 404
+
+    existing_follow = Followers.query.filter_by(
+        user_id=current_user_id, follower_id=user_id_to_follow
+    ).first()
+
+    if existing_follow:
+        return jsonify({"message": "You are already following this user"}), 400
+
+    new_follow = Followers(user_id=current_user_id, follower_id=user_id_to_follow)
+    db.session.add(new_follow)
+    db.session.commit()
+
+    return jsonify({"message": "You are now following the user"}), 201
+
+
 # Route for logout
 @app.route('/userlogout', methods=['GET'])
 @jwt_required()
@@ -160,6 +223,29 @@ def logout():
     logout_user()
     return 'Logged out successfully'
 
+@app.route('/deleteaccount', methods=['GET'])
+@jwt_required()
+def delete_account():
+    user_id = get_jwt_identity() 
+
+    if user_id:
+        # Query the database to find the user
+        user = User.query.get(user_id)
+
+        if user:
+            try:
+                # Delete the user from the database
+                db.session.delete(user)
+                db.session.commit()
+
+                return 'Your account has been deleted.'
+            except Exception as e:
+                db.session.rollback()  
+                return jsonify({'error': 'An error occurred while deleting the user.'}), 500
+        else:
+            return 'User not found.'
+    else:
+        return 'Invalid or expired token.'
 
 
 #Route for getting the all clubs
@@ -407,7 +493,7 @@ def book_summary(id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5003)
 
 #For admin the route is /admin/
 #So if someone logs in as an admin we show them the button for admin if not we don't show them the admin button
